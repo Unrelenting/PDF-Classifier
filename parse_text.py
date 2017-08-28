@@ -3,6 +3,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
 import string
 import os
@@ -57,24 +58,26 @@ def train_data():
                         textfilepath = txtDir + client + '/' + folder + '/' + textfile
                         doc = get_docs(textfilepath)
                         docs_list.append(doc)
-                    token_dict[str(idx) + '_' + client + '_' + folder] = docs_list
+                    token_dict[str(idx) + '-' + client + '-' + folder] = docs_list
                     idx += 1
     return token_dict
 
 
 def get_raw_docs(token_dict):
     raw_docs = []
+    doc_labels = []
     for key in token_dict.keys():
         for doc in token_dict[key]:
             raw_docs.append(doc)
-    return raw_docs
+            doc_labels.append(key.split('-')[2])
+    return raw_docs, doc_labels
 
 
 def categories(token_dict):
     # returns all the unique categories of folders
     categories = []
     for key in token_dict.keys():
-        categories.append(key.split('_')[2])
+        categories.append(key.split('-')[2])
     return set(categories)
 
 
@@ -83,7 +86,7 @@ def category_dicts(token_dict, categories):
     # returns a list where each element are dictionaries that are of the same category
     sep_dicts = []
     for category in categories:
-        category_dict = dict((k, v) for k, v in token_dict.iteritems() if k.split('_')[1] == category)
+        category_dict = dict((k, v) for k, v in token_dict.iteritems() if k.split('-')[1] == category)
         sep_dicts.append(category_dict)
     return sep_dicts
 
@@ -114,12 +117,22 @@ def categorize(token_dict, client_folder, categories):
         category_avg = 0
         num_folders = 0
         for folder in token_dict.keys():
-            if category == folder.split('_')[2]:
-                category_avg += client_folder[int(folder.split('_')[0])][0]
+            if category == folder.split('-')[2]:
+                category_avg += client_folder[int(folder.split('-')[0])][0]
                 num_folders += 1
         category_avg = category_avg / num_folders
         result[category] = category_avg
     return result
+
+
+def predict(result):
+    prediction = ''
+    similarity = 0
+    for key, value in result.iteritems():
+        if value > similarity:
+            similarity = value
+            prediction = key
+    return prediction
 
 
 def cosine_similarity(doc1, doc2):
@@ -131,17 +144,25 @@ if __name__ == '__main__':
     tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
 
     token_dict = train_data()
-    raw_docs = get_raw_docs(token_dict)
+    raw_docs, doc_labels = get_raw_docs(token_dict)
     categories = categories(token_dict)
 
     tfidfed = tfidf.fit_transform(raw_docs)
 
-    test = get_docs('/Users/matthewwong/dsi-capstone/Text/A1/Appraisal/Certificate.txt')
-    test1 = []
-    test2 = test1.append(test)
+    # Naive Bayes example
+    # mnb = MultinomialNB()
+    # mnb.fit(X_train, y_train)
+    # print 'Accuracy:', mnb.score(X_test, y_test)
+    # sklearn_predictions = mnb.predict(X_test)
 
-    tfidfed1 = tfidf.transform(test1)
-    cos = cosine_similarity(tfidfed, tfidfed1)
+    nb = MultinomialNB()
 
-    client_folder = summarize(token_dict, cos)
-    result = categorize(token_dict, client_folder, categories)
+    # test = get_docs('/Users/matthewwong/dsi-capstone/Text/A1/Appraisal/Certificate.txt')
+    # test1 = []
+    # test2 = test1.append(test)
+    #
+    # tfidfed1 = tfidf.transform(test1)
+    # cos = cosine_similarity(tfidfed, tfidfed1)
+    #
+    # client_folder = summarize(token_dict, cos)
+    # result = categorize(token_dict, client_folder, categories)

@@ -30,9 +30,6 @@ def decrypt_pdf(filename):
     client_folder = filename.split('/')[-3]
     subfolder = filename.split('/')[-2]
     pdf_file = filename.split('/')[-1]
-    # cleaned = format_filename(pdf_file)
-    # filename = decrypted_file + subfolder + cleaned
-
     if not os.path.exists(decrypted_file + filename.split('/')[-3]):
         os.makedirs(decrypted_file + filename.split('/')[-3])
     if not os.path.exists(decrypted_file + filename.split('/')[-3] + '/' + filename.split('/')[-2]):
@@ -66,5 +63,7 @@ def decrypt(folder):
 
 
 # if __name__ == '__main__':
+    # examples
     # decrypt_pdf('/Users/matthewwong/Desktop/Insurance.pdf')
     # decrypt_folder('/Users/matthewwong/Desktop/A1')
+    # decrypt('A1')
