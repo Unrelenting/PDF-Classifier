@@ -17,25 +17,26 @@ def classify_cos(TestDir):
             for category in os.listdir(category_path):
                 if not category.startswith('.'):
                     pdf_path = TestDir + '/' + client + '/' + category
-                    for pdf in os.listdir(pdf_path):
-                        lst = []
-                        # labels for the test documents
-                        labels.append(category)
-                        # cleans the test document
-                        new_pdf = get_docs(pdf_path + '/' + pdf)
-                        # takes new pdf in a list so it is able to be transformed
-                        lst.append(new_pdf)
-                        # returns term-document matrix
-                        tfidfed1 = tfidf.transform(lst)
-                        # calculates cos_similarity between training set and new document
-                        cos = cosine_similarity(tfidfed, tfidfed1)
-                        # averages the cosine similarities for client_folders
-                        client_folder = summarize(token_dict, cos)
-                        # averages the cosine similarities for categories
-                        result = categorize(token_dict, client_folder, categories)
-                        # predicts which category the document should fit in
-                        prediction = predict(result)
-                        predictions.append(prediction)
+                    if len(os.listdir(pdf_path)) > 0:
+                        for pdf in os.listdir(pdf_path):
+                            lst = []
+                            # labels for the test documents
+                            labels.append(category)
+                            # cleans the test document
+                            new_pdf = get_docs(pdf_path + '/' + pdf)
+                            # takes new pdf in a list so it is able to be transformed
+                            lst.append(new_pdf)
+                            # returns term-document matrix
+                            tfidfed1 = tfidf.transform(lst)
+                            # calculates cos_similarity between training set and new document
+                            cos = cosine_similarity(tfidfed, tfidfed1)
+                            # averages the cosine similarities for client_folders
+                            client_folder = summarize(token_dict, cos)
+                            # averages the cosine similarities for categories
+                            result = categorize(token_dict, client_folder, categories)
+                            # predicts which category the document should fit in
+                            prediction = predict(result)
+                            predictions.append(prediction)
     return predictions, labels
 
 
@@ -67,10 +68,10 @@ def classify_nb(TestDir):
                         # y_test is the label for each document
                         y_test.append(category)
     # reshapes y_test because nb takes array_like not a list
-    reshape_labels = np.asarray(labels)
-    reshape_labels.reshape(len(labels), 1)
+    reshape_doc_labels = np.asarray(doc_labels)
+    reshape_doc_labels.reshape(len(doc_labels), 1)
     # nb.fit takes in (X_train as sparse_matrix, array_like)
-    nb.fit(tfidfed, reshape_labels)
+    nb.fit(tfidfed, reshape_doc_labels)
     # changes X_test into a sparse_matrix
     tfidfed1 = tfidf.transform(X_test)
     # predicts X_test
@@ -78,7 +79,7 @@ def classify_nb(TestDir):
     return pred, y_test
 
 
-def nb_accuracy(labels, predictions, display=False):
+def nb_accuracy(predictions, labels, display=False):
     accuracy = []
     predictions = predictions.tolist()
     for i in xrange(len(labels)):
@@ -90,18 +91,28 @@ def nb_accuracy(labels, predictions, display=False):
     print 'Total Accuracy: {}'.format(sum(accuracy) / len(accuracy))
 
 
+def compare(cos_predictions, nb_predictions, labels):
+    for i in xrange(len(cos_predictions)):
+        print (cos_predictions[i], nb_predictions[i], labels[i])
+
+
 if __name__ == '__main__':
     tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
+    nb = MultinomialNB()
 
-    token_dict = train_data()
+    # deletes documents with no text in them
+    strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    strip_blank('/Users/matthewwong/dsi-capstone/Test/')
+    token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
     raw_docs, doc_labels = get_raw_docs(token_dict)
     categories = categories(token_dict)
 
     tfidfed = tfidf.fit_transform(raw_docs)
 
-    nb = MultinomialNB()
+# Examples of command line inputs
 
-# predictions, labels = classify_cos('/Users/matthewwong/dsi-capstone/Test')
-# cos_accuracy(predictions, labels)
-# predictions, labels = classify_nb('/Users/matthewwong/dsi-capstone/Test')
-# nb_accuracy(predictions, labels)
+# cos_predictions, cos_labels = classify_cos('/Users/matthewwong/dsi-capstone/Test')
+# cos_accuracy(cos_predictions, cos_labels)
+# nb_predictions, nb_labels = classify_nb('/Users/matthewwong/dsi-capstone/Test')
+# nb_accuracy(nb_predictions, nb_labels)
+# compare(cos_predictions, nb_predictions, cos_labels)

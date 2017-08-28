@@ -41,11 +41,27 @@ def tokenize(text):
     return stems
 
 
-def train_data():
+# txtDir = '/Users/matthewwong/dsi-capstone/Text/'
+def strip_blank(txtDir):
+    # gets clients
+    for client in os.listdir(txtDir):
+        if not client.startswith('.'):
+            # gets folders
+            for folder in os.listdir(txtDir + client):
+                if not folder.startswith('.'):
+                    # gets textfiles
+                    docs_list = []
+                    for textfile in os.listdir(txtDir + client + '/' + folder):
+                        textfilepath = txtDir + client + '/' + folder + '/' + textfile
+                        if os.stat(textfilepath).st_size < 25:
+                            os.remove(textfilepath)
+
+
+# txtDir = '/Users/matthewwong/dsi-capstone/Text/'
+def train_data(txtDir):
     # keys are the documents client_folder and values are the words
     idx = 0
     token_dict = OrderedDict()
-    txtDir = "/Users/matthewwong/dsi-capstone/Text/"
     # gets clients
     for client in os.listdir(txtDir):
         if not client.startswith('.'):
@@ -96,15 +112,20 @@ def summarize(token_dict, cos):
     client_folder = OrderedDict()
     num_client_folder = 0
     total_num_docs = 0
+    # goes through all the client_folders and counts the subfolders
     for key in token_dict.keys():
         cos_sum = 0
         avg_cos = 0
         num_docs = 0
+        # goes through all the documents in each subfolder
+        # only increments if subfolders are not empty
         for doc_num in xrange(len(token_dict[key])):
             cos_sum += cos[total_num_docs]
             num_docs += 1
             total_num_docs += 1
-        avg_cos = cos_sum / num_docs
+        # avg_cos would be 0 for subfolders that are empty
+        if num_docs > 0:
+            avg_cos = cos_sum / num_docs
         client_folder[num_client_folder] = avg_cos
         num_client_folder += 1
     return client_folder
@@ -117,9 +138,11 @@ def categorize(token_dict, client_folder, categories):
         category_avg = 0
         num_folders = 0
         for folder in token_dict.keys():
+            # finds every subfolder in that category and sums their cos_similarity
             if category == folder.split('-')[2]:
-                category_avg += client_folder[int(folder.split('-')[0])][0]
-                num_folders += 1
+                if type(client_folder[int(folder.split('-')[0])]) != int:
+                    category_avg += client_folder[int(folder.split('-')[0])][0]
+                    num_folders += 1
         category_avg = category_avg / num_folders
         result[category] = category_avg
     return result
@@ -142,27 +165,11 @@ def cosine_similarity(doc1, doc2):
 
 if __name__ == '__main__':
     tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
+    nb = MultinomialNB()
 
-    token_dict = train_data()
+    strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
     raw_docs, doc_labels = get_raw_docs(token_dict)
     categories = categories(token_dict)
 
     tfidfed = tfidf.fit_transform(raw_docs)
-
-    # Naive Bayes example
-    # mnb = MultinomialNB()
-    # mnb.fit(X_train, y_train)
-    # print 'Accuracy:', mnb.score(X_test, y_test)
-    # sklearn_predictions = mnb.predict(X_test)
-
-    nb = MultinomialNB()
-
-    # test = get_docs('/Users/matthewwong/dsi-capstone/Text/A1/Appraisal/Certificate.txt')
-    # test1 = []
-    # test2 = test1.append(test)
-    #
-    # tfidfed1 = tfidf.transform(test1)
-    # cos = cosine_similarity(tfidfed, tfidfed1)
-    #
-    # client_folder = summarize(token_dict, cos)
-    # result = categorize(token_dict, client_folder, categories)
