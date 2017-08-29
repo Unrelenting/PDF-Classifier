@@ -7,6 +7,7 @@ from sklearn.naive_bayes import MultinomialNB
 from collections import OrderedDict
 import string
 import os
+import re
 
 
 stemmer = PorterStemmer()
@@ -18,6 +19,7 @@ def get_docs(filename):
         lowers = text.lower()
         replace = lowers.replace('\n', ' ')
         replace = replace.replace('\t', ' ')
+        replace = re.sub('[^A-Za-z0-9]+', ' ', replace)
         no_punctuation = replace.translate(None, string.punctuation)
         return no_punctuation
 
