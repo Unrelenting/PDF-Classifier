@@ -101,8 +101,9 @@ if __name__ == '__main__':
     nb = MultinomialNB()
 
     # deletes documents with no text in them
-    strip_blank('/Users/matthewwong/dsi-capstone/Text/')
-    strip_blank('/Users/matthewwong/dsi-capstone/Test/')
+    # strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    # strip_blank('/Users/matthewwong/dsi-capstone/Test/')
+
     token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
     raw_docs, doc_labels = get_raw_docs(token_dict)
     categories = categories(token_dict)

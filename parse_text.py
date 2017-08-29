@@ -8,6 +8,8 @@ from collections import OrderedDict
 import string
 import os
 import re
+import unicodedata
+from OCR import *
 
 
 stemmer = PorterStemmer()
@@ -45,6 +47,9 @@ def tokenize(text):
 
 # txtDir = '/Users/matthewwong/dsi-capstone/Text/'
 def strip_blank(txtDir):
+    # list of documents that pdfminer could not convert to text
+    blank_docs = []
+    list_to_OCR = []
     # gets clients
     for client in os.listdir(txtDir):
         if not client.startswith('.'):
@@ -56,7 +61,25 @@ def strip_blank(txtDir):
                     for textfile in os.listdir(txtDir + client + '/' + folder):
                         textfilepath = txtDir + client + '/' + folder + '/' + textfile
                         if os.stat(textfilepath).st_size < 25:
+                            blank_docs.append(textfilepath)
                             os.remove(textfilepath)
+    for filename in blank_docs:
+        # [5:] should refer to the index starting with the client folder (ex: A1)
+        list_to_OCR.append('/'.join(filename.split('/')[5:]))
+    return list_to_OCR
+
+
+def fill_blank(list_to_OCR):
+    pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted/'
+    txtDir = '/Users/matthewwong/dsi-capstone/Text/'
+    for filename in list_to_OCR:
+        print 'Converting file: {}'.format(filename)
+        new_filename = string.replace(filename, '.txt', '.pdf')
+        final_text = get_text(pdfDir + new_filename)
+        text_file = open(txtDir + filename, 'w')
+        for page in final_text:
+            text_file.write(page.encode('ascii','ignore'))
+        text_file.close()
 
 
 # txtDir = '/Users/matthewwong/dsi-capstone/Text/'
@@ -169,9 +192,10 @@ if __name__ == '__main__':
     tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
     nb = MultinomialNB()
 
-    strip_blank('/Users/matthewwong/dsi-capstone/Text/')
-    token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
-    raw_docs, doc_labels = get_raw_docs(token_dict)
-    categories = categories(token_dict)
-
-    tfidfed = tfidf.fit_transform(raw_docs)
+    # list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    # fill_blank(list_to_OCR)
+    # token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
+    # raw_docs, doc_labels = get_raw_docs(token_dict)
+    # categories = categories(token_dict)
+    #
+    # tfidfed = tfidf.fit_transform(raw_docs)

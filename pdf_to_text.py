@@ -73,6 +73,14 @@ def convert(Dir):
             convert_multiple(pdfDir1, txtDir1)
 
 
+def convert_pdfDir():
+    pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
+    for client in os.listdir(pdfDir):
+        if not client.startswith('.'):
+            print client
+            convert(client)
+
+
 # if __name__ == '__main__':
     # text = convert('/Users/matthewwong/dsi-capstone/pdf_to_text/PDFs/test1.pdf')
     # convert_multiple(pdfDir, txtDir + pdfDir.split('/')[-1])
