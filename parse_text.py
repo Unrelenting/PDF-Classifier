@@ -69,7 +69,18 @@ def strip_blank(txtDir):
     return list_to_OCR
 
 
-def fill_blank(list_to_OCR):
+# ex: fill_one('V1/Insurance/Villarin - Insurance - Current HO6 - Allstate - EXP 2018-04-17 - 562.00.pdf')
+def fill_one(filename):
+    pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted/'
+    txtDir = '/Users/matthewwong/dsi-capstone/Text/'
+    final_text = get_text(pdfDir + filename)
+    text_file = open(txtDir + filename, 'w')
+    for page in final_text:
+        text_file.write(page.encode('ascii','ignore'))
+    text_file.close()
+
+
+def fill_blanks(list_to_OCR):
     pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted/'
     txtDir = '/Users/matthewwong/dsi-capstone/Text/'
     for filename in list_to_OCR:
@@ -194,8 +205,9 @@ if __name__ == '__main__':
 
     # list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
     # fill_blank(list_to_OCR)
-    # token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
-    # raw_docs, doc_labels = get_raw_docs(token_dict)
-    # categories = categories(token_dict)
-    #
-    # tfidfed = tfidf.fit_transform(raw_docs)
+
+    token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
+    raw_docs, doc_labels = get_raw_docs(token_dict)
+    categories = categories(token_dict)
+
+    tfidfed = tfidf.fit_transform(raw_docs)
