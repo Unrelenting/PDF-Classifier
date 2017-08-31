@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 
-def classify_knn_cos(test_docs, n=6): # was TestDir
+def classify_knn_cos(test_docs, n=6):
     '''
     Classifies new documents by finding their cosine similarity to each document
     in the training data.  Then returns a prediction based on majority of the

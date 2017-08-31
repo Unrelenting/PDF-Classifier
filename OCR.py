@@ -11,7 +11,7 @@ def get_text(filepath):
     Uses OCR to get the text from a pdf.
     Returns a list where each element is the text of a single page of that pdf.
     ex: final_text = get_text('/Users/matthewwong/dsi-capstone/PDFs/decrypted/
-        A1/Certifications/Certificates Flood Cert.txt')
+        A1/Certifications/Certificates Flood Cert.pdf')
     '''
     tool = pyocr.get_available_tools()[0]
     lang = tool.get_available_languages()[0]

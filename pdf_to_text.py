@@ -1,9 +1,11 @@
 from cStringIO import StringIO
-import pdfminer
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
+from OCR import *
+import string
+import pdfminer
 import os
 import sys, getopt
 
@@ -17,8 +19,11 @@ https://github.com/euske/pdfminer/commit/6b6fc264ffd58cd1c305e8c23990b85e846964e
 '''
 
 
-# converts pdf and returns its text content as a string
 def convert_one(filename, pages=None):
+    '''
+    Converts a PDF and returns its contents as a string
+    ex: text = convert_one('/Users/matthewwong/dsi-capstone/PDFs/decrypted/A1/Appraisal/Certificate.pdf')
+    '''
     if not pages:
         pagenums = set()
     else:
@@ -39,8 +44,11 @@ def convert_one(filename, pages=None):
     return text
 
 
-# converts all pdfs in directory pdfDir and saves all resulting text files to txtdir
 def convert_multiple(pdfDir, txtDir):
+    '''
+    Converts all PDFs in a specific folder to the Text directory.
+    ex: convert_multiple(pdfDir, txtDir + pdfDir.split('/')[-1])
+    '''
     text_file = "/Users/matthewwong/dsi-capstone/Text/"
     if pdfDir == "": pdfDir = os.getcwd() + "\\" # if no pdfDir passed in
     for pdf in os.listdir(pdfDir): # iterate through pdfs in pdf directory
@@ -59,6 +67,10 @@ def convert_multiple(pdfDir, txtDir):
 
 
 def convert(Dir):
+    '''
+    Converts one client's folder with PDFs into text documents in the Text directory
+    ex: convert('A1')
+    '''
     # filepath to decrypted pdfs folder and text directory
     pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
     txtDir = "/Users/matthewwong/dsi-capstone/Text/"
@@ -74,6 +86,11 @@ def convert(Dir):
 
 
 def convert_pdfDir():
+    '''
+    Simple command line function that will convert every client in the decrypted
+    directory into the text directory.
+    ex: convert_pdfDir()
+    '''
     pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
     for client in os.listdir(pdfDir):
         if not client.startswith('.'):
@@ -81,7 +98,31 @@ def convert_pdfDir():
             convert(client)
 
 
-# if __name__ == '__main__':
-    # text = convert('/Users/matthewwong/dsi-capstone/pdf_to_text/PDFs/test1.pdf')
-    # convert_multiple(pdfDir, txtDir + pdfDir.split('/')[-1])
-    # convert('A1')
+def OCR_convert(pdfDir, txtDir):
+    '''
+    Uses OCR to convert all PDF documents from one directory into another.
+    ex: OCR_convert('/Users/matthewwong/dsi-capstone/PDFs/decrypted_subset/', \
+                    '/Users/matthewwong/dsi-capstone/OCR_text_subset/')
+    '''
+    for client in os.listdir(pdfDir)[1:]:
+        print 'Converting: {}'.format(client)
+        # makes client folders if they do not exist
+        if not os.path.exists(txtDir + client):
+            os.makedirs(txtDir + client)
+        for folder in os.listdir(pdfDir + client)[1:]:
+            # makes category folders if they do not exist
+            if not os.path.exists(txtDir + client + '/' + folder):
+                os.makedirs(txtDir + client + '/' + folder)
+
+            for pdf in os.listdir(pdfDir + client + '/' + folder):
+                fileExtension = pdf.split('.')[-1]
+                if fileExtension == 'pdf' or fileExtension == 'PDF':
+                    final_text = get_text(pdfDir + client + '/' + folder + '/' + pdf)
+
+                    new_filename = string.replace(pdf, '.pdf', '.txt')
+                    new_filename = string.replace(new_filename, '.PDF', '.txt')
+
+                    text_file = open(txtDir + client + '/' + folder + '/' + new_filename, 'w')
+                    for page in final_text:
+                        text_file.write(page.encode('ascii','ignore'))
+                    text_file.close()
