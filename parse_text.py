@@ -16,6 +16,7 @@ stemmer = PorterStemmer()
 
 
 def get_docs(filename):
+    ''' Returns a cleaned text document. '''
     with open(filename, 'r') as f:
         text = f.read()
         lowers = text.lower()
@@ -45,9 +46,13 @@ def tokenize(text):
     return stems
 
 
-# txtDir = '/Users/matthewwong/dsi-capstone/Text/'
 def strip_blank(txtDir):
-    # list of documents that pdfminer could not convert to text
+    '''
+    Deletes any blank text documents created when pdfminer could not pull the text.
+    ex: list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    Returns a list of the blank documents that were deleted and need be pulled with
+    OCR.
+    '''
     blank_docs = []
     list_to_OCR = []
     # gets clients
@@ -60,17 +65,22 @@ def strip_blank(txtDir):
                     docs_list = []
                     for textfile in os.listdir(txtDir + client + '/' + folder):
                         textfilepath = txtDir + client + '/' + folder + '/' + textfile
+                        # refers to any document smaller than size 25 as blank
                         if os.stat(textfilepath).st_size < 25:
                             blank_docs.append(textfilepath)
                             os.remove(textfilepath)
     for filename in blank_docs:
-        # [5:] should refer to the index starting with the client folder (ex: A1)
+        # [5:] refers to the index starting with the client folder (ex: A1)
         list_to_OCR.append('/'.join(filename.split('/')[5:]))
     return list_to_OCR
 
 
-# ex: fill_one('V1/Insurance/Villarin - Insurance - Current HO6 - Allstate - EXP 2018-04-17 - 562.00.pdf')
 def fill_one(filename):
+    '''
+    Use to replace a text document that pdfminer could not pull the text from.
+    ex: fill_one('V1/Insurance/Villarin - Insurance - Current HO6 - Allstate - \
+        EXP 2018-04-17 - 562.00.pdf')
+    '''
     pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted/'
     txtDir = '/Users/matthewwong/dsi-capstone/Text/'
     final_text = get_text(pdfDir + filename)
@@ -81,6 +91,10 @@ def fill_one(filename):
 
 
 def fill_blanks(list_to_OCR):
+    '''
+    Use to replace text documents that pdfminer could not pull any text from.
+    ex: fill_blanks(list_to_OCR)
+    '''
     pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted/'
     txtDir = '/Users/matthewwong/dsi-capstone/Text/'
     for filename in list_to_OCR:
@@ -93,9 +107,14 @@ def fill_blanks(list_to_OCR):
         text_file.close()
 
 
-# txtDir = '/Users/matthewwong/dsi-capstone/Text/'
-def train_data(txtDir):
-    # keys are the documents client_folder and values are the words
+def get_dict(txtDir):
+    '''
+    Returns a dictionary where the keys are in the form index-client-folder, and
+    the value are all the cleaned documents in those folders.
+    ex: get_dict('/Users/matthewwong/dsi-capstone/Text/')
+    ex key: '0-A1-Appraisal'
+    ex value: [doc1, doc2, doc3, doc4, doc5]
+    '''
     idx = 0
     token_dict = OrderedDict()
     # gets clients
@@ -115,7 +134,8 @@ def train_data(txtDir):
     return token_dict
 
 
-def get_raw_docs(token_dict):
+def seperate(token_dict):
+    ''' Seperates the data into raw_docs and doc_labels. '''
     raw_docs = []
     doc_labels = []
     for key in token_dict.keys():
@@ -126,88 +146,34 @@ def get_raw_docs(token_dict):
 
 
 def categories(token_dict):
-    # returns all the unique categories of folders
+    ''' Gets all the unique categories of documents. '''
     categories = []
     for key in token_dict.keys():
         categories.append(key.split('-')[2])
     return set(categories)
 
 
-# not used
 def category_dicts(token_dict, categories):
-    # returns a list where each element are dictionaries that are of the same category
+    '''
+    Returns a list of dictionaries where the keys are each unique category
+    and the values are documents in that category.
+    '''
     sep_dicts = []
     for category in categories:
-        category_dict = dict((k, v) for k, v in token_dict.iteritems() if k.split('-')[1] == category)
+        category_dict = dict((k, v) for k, v in token_dict.iteritems() if \
+                        k.split('-')[1] == category)
         sep_dicts.append(category_dict)
     return sep_dicts
 
 
-# gets the average of the sums of the cosine similarities for client_folders
-def summarize(token_dict, cos):
-    client_folder = OrderedDict()
-    num_client_folder = 0
-    total_num_docs = 0
-    # goes through all the client_folders and counts the subfolders
-    for key in token_dict.keys():
-        cos_sum = 0
-        avg_cos = 0
-        num_docs = 0
-        # goes through all the documents in each subfolder
-        # only increments if subfolders are not empty
-        for doc_num in xrange(len(token_dict[key])):
-            cos_sum += cos[total_num_docs]
-            num_docs += 1
-            total_num_docs += 1
-        # avg_cos would be 0 for subfolders that are empty
-        if num_docs > 0:
-            avg_cos = cos_sum / num_docs
-        client_folder[num_client_folder] = avg_cos
-        num_client_folder += 1
-    return client_folder
-
-
-# gets the average cosine similarity for each category
-def categorize(token_dict, client_folder, categories):
-    result = {}
-    for category in categories:
-        category_avg = 0
-        num_folders = 0
-        for folder in token_dict.keys():
-            # finds every subfolder in that category and sums their cos_similarity
-            if category == folder.split('-')[2]:
-                if type(client_folder[int(folder.split('-')[0])]) != int:
-                    category_avg += client_folder[int(folder.split('-')[0])][0]
-                    num_folders += 1
-        category_avg = category_avg / num_folders
-        result[category] = category_avg
-    return result
-
-
-def predict(result):
-    prediction = ''
-    similarity = 0
-    for key, value in result.iteritems():
-        if value > similarity:
-            similarity = value
-            prediction = key
-    return prediction
-
-
 def cosine_similarity(doc1, doc2):
+    '''
+    Compares the cosine similarity between two documents.
+    tfidfed = tfidf.fit_transform(training_docs)
+    tfidfed1 = tfidf.transform(test_docs)
+    ex: cos = cosine_similarity(tfidfed1, tfidfed)
+    cos is a numpy.ndarray where each element is another numpy.ndarray with the
+    corresponding cosine similarity to each document in the training set
+    '''
     cosine_similarities = linear_kernel(doc1, doc2)
     return cosine_similarities
-
-
-if __name__ == '__main__':
-    tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
-    nb = MultinomialNB()
-
-    # list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
-    # fill_blank(list_to_OCR)
-
-    token_dict = train_data('/Users/matthewwong/dsi-capstone/Text/')
-    raw_docs, doc_labels = get_raw_docs(token_dict)
-    categories = categories(token_dict)
-
-    tfidfed = tfidf.fit_transform(raw_docs)
