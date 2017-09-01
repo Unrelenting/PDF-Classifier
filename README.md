@@ -59,6 +59,7 @@ cos_predictions = classify_avg_cos(categories, test_docs, tfidfed, training_labe
 knn_predictions = classify_knn_cos(test_docs, tfidfed, training_labels)
 
 
+
 # Notes on accuracy:
 
 Just looking at kNN model:
