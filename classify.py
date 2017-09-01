@@ -8,13 +8,13 @@ import os
 import numpy as np
 
 
-def classify_knn_cos(test_docs, n=6):
+def classify_knn_cos(test_docs, tfidfed, training_labels, n=3):
     '''
     Classifies new documents by finding their cosine similarity to each document
     in the training data.  Then returns a prediction based on majority of the
-    labels for the top n-1 cosine values.
-    Use even n so n-1 will be odd in case of ties.
-    ex: knn_predictions = classify_knn_cos(test_docs)
+    labels for the top n cosine values.
+    Use odd n values, so there will not be ties.
+    ex: knn_predictions = classify_knn_cos(test_docs, tfidfed, training_labels)
     '''
     tfidfed1 = tfidf.transform(test_docs)
     cos = cosine_similarity(tfidfed1, tfidfed)
@@ -27,7 +27,7 @@ def classify_knn_cos(test_docs, n=6):
         copy = deepcopy(cos[test_doc])
         copy.sort()
         # takes the n-1 highest cosine similarities
-        top_n = copy[:-n:-1]
+        top_n = copy[:-n-1:-1]
         # finds the index for each of those cosine similarities
         for doc_cos_sim in top_n:
             idx = np.where(cos[test_doc] == doc_cos_sim)
@@ -59,7 +59,7 @@ def knn_accuracy(knn_predictions, test_labels, display=False):
     print 'Total Accuracy: {}'.format(sum(accuracy) / len(accuracy))
 
 
-def classify_avg_cos(test_docs, threshold=1.5):
+def classify_avg_cos(categories, test_docs, tfidfed, training_labels, threshold=1.5):
     '''
     Classifies new documents by finding their average cosine similarity to each
     of the different categories.  The average cosine similarity is calculated
@@ -68,7 +68,7 @@ def classify_avg_cos(test_docs, threshold=1.5):
     is above the threshold level, then it returns that prediction.  If it is within
     the threshold then it returns the top 3 categories with their average cosine
     similarities.  Base threshold is set at 1.5 times the second greatest category.
-    ex: cos_predictions = classify_avg_cos(test_docs)
+    ex: cos_predictions = classify_avg_cos(categories, test_docs, tfidfed, training_labels)
     '''
     tfidfed1 = tfidf.transform(test_docs)
     cos = cosine_similarity(tfidfed1, tfidfed)
@@ -119,10 +119,10 @@ def cos_accuracy(cos_predictions, test_labels, display=False):
     print 'Total Accuracy: {}'.format(sum(accuracy) / len(accuracy))
 
 
-def classify_nb():
+def classify_nb(test_docs, tfidfed, training_labels):
     '''
     Classifies new documents using a Naive Bayes model.
-    ex: nb_predictions = classify_nb()
+    ex: nb_predictions = classify_nb(test_docs, tfidfed, training_labels)
     '''
     # reshape training_labels to a column vector
     reshape_labels = np.asarray(training_labels)
@@ -168,24 +168,15 @@ if __name__ == '__main__':
     tfidf = TfidfVectorizer(tokenizer=tokenize, stop_words='english')
     nb = MultinomialNB()
 
-    # deletes documents with no text in them
-    # list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
-    # list_to_OCR1 = strip_blank('/Users/matthewwong/dsi-capstone/Test/')
-
-    # training_dict = get_dict('/Users/matthewwong/dsi-capstone/Text/')
-    # training_docs, training_labels = seperate(training_dict)
-    # test_dict = get_dict('/Users/matthewwong/dsi-capstone/Test/')
-    # test_docs, test_labels = seperate(test_dict)
-    # categories = categories(training_dict)
-    # tfidfed = tfidf.fit_transform(training_docs)
-
+    # Example Command Lines:
+    #
     dictionary = get_dict('/Users/matthewwong/dsi-capstone/Text/')
     docs, labels = seperate(dictionary)
     training_docs, test_docs, training_labels, test_labels = train_test_split(\
        docs, labels, stratify=labels, test_size=0.25)
     categories = categories(dictionary)
     tfidfed = tfidf.fit_transform(training_docs)
-
-    # tfidfed1 = tfidf.transform(test_docs)
     #
-    # cos = cosine_similarity(tfidfed1, tfidfed)
+    # nb_predictions = classify_nb(test_docs, tfidfed, training_labels)
+    # cos_predictions = classify_avg_cos(categories, test_docs, tfidfed, training_labels)
+    # knn_predictions = classify_knn_cos(test_docs, tfidfed, training_labels)

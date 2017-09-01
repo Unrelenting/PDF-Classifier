@@ -13,13 +13,14 @@ def format_filename(filename):
     return filename
 
 
-def clean_folder(folder):
+def clean_folder(client_folder):
     '''
     Goes through each folder and checks if the filenames are acceptable.
+    ex: clean_folder('/Users/matthewwong/Desktop/A1')
     '''
-    for subfolder in os.listdir(folder):
-        filepath = str(folder) + '/' + subfolder
-        if not subfolder.startswith('.'):
+    for folder in os.listdir(client_folder):
+        filepath = client_folder + '/' + folder
+        if not folder.startswith('.'):
             for filename in os.listdir(filepath):
                 os.rename(filepath + '/' + filename, \
                     filepath + '/' + format_filename(filename))
@@ -35,27 +36,27 @@ def decrypt_pdf(filename):
     '''
     decrypted_file = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
     client_folder = filename.split('/')[-3]
-    subfolder = filename.split('/')[-2]
-    pdf_file = filename.split('/')[-1]
+    folder = filename.split('/')[-2]
+    pdf = filename.split('/')[-1]
     if not os.path.exists(decrypted_file + client_folder):
         os.makedirs(decrypted_file + client_folder)
-    if not os.path.exists(decrypted_file + client_folder + '/' + subfolder):
-        os.makedirs(decrypted_file + client_folder + '/' + subfolder)
+    if not os.path.exists(decrypted_file + client_folder + '/' + folder):
+        os.makedirs(decrypted_file + client_folder + '/' + folder)
     lst = ["qpdf", "--password=''", "--decrypt", filename, \
-        decrypted_file + client_folder + '/' + subfolder + '/' + pdf_file]
+        decrypted_file + client_folder + '/' + folder + '/' + pdf]
     subprocess.call(' '.join(map(lambda x: x.replace(' ', '\ '), lst)),
                     shell=True)
 
 
-def decrypt_folder(folder):
+def decrypt_folder(client_folder):
     '''
     Decrypts a folder so the PDFs can be run through PDFminer to extract text.
     ex: decrypt_folder('/Users/matthewwong/Desktop/A1')
     '''
     # looks at all the folders in the client folder
-    for subfolder in os.listdir(folder):
-        filepath = str(folder) + '/' + subfolder
-        if not subfolder.startswith('.'):
+    for folder in os.listdir(client_folder):
+        filepath = str(client_folder) + '/' + folder
+        if not folder.startswith('.'):
             # looks at the files in those folders
             for filename in os.listdir(filepath):
                 # list of all the pdfs
@@ -67,10 +68,10 @@ def decrypt_folder(folder):
                     decrypt_pdf(pdf)
 
 
-def decrypt(folder):
+def decrypt(client_folder):
     '''
     Decrypts a client's entire folder.
-    ex: decrypt('A1')
+    ex: decrypt('/Users/matthewwong/Desktop/A1')
     '''
-    clean_folder(folder)
-    decrypt_folder(folder)
+    clean_folder(client_folder)
+    decrypt_folder(client_folder)

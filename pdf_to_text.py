@@ -53,7 +53,7 @@ def convert_multiple(pdfDir, txtDir):
     if pdfDir == "": pdfDir = os.getcwd() + "\\" # if no pdfDir passed in
     for pdf in os.listdir(pdfDir): # iterate through pdfs in pdf directory
         fileExtension = pdf.split(".")[-1]
-        if fileExtension == "pdf":
+        if fileExtension == "pdf" or fileExtension == "PDF":
             pdfFilename = pdfDir + '/' + pdf
             text = convert_one(pdfFilename) # get string of text content of pdf
             # makes folder for client if none exists in text folder
@@ -94,7 +94,7 @@ def convert_pdfDir():
     pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
     for client in os.listdir(pdfDir):
         if not client.startswith('.'):
-            print client
+            print 'Converting: {}'.format(client)
             convert(client)
 
 
