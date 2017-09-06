@@ -61,7 +61,8 @@ def convert_multiple(pdfDir, txtDir):
                 os.makedirs(text_file + pdfDir.split('/')[-2])
             if not os.path.exists(text_file + pdfDir.split('/')[-2] + '/' + pdfDir.split('/')[-1]):
                 os.makedirs(text_file + pdfDir.split('/')[-2] + '/' + pdfDir.split('/')[-1])
-            textFilename = txtDir + '/' + pdf.split('.')[0] + ".txt"
+            # textFilename = txtDir + '/' + pdf.split('.')[0] + ".txt"
+            textFilename = txtDir + '/' + string.replace(pdf, '.pdf', '.txt')
             textFile = open(textFilename, "w") # make text file
             textFile.write(text) # write text to text file
 
@@ -72,7 +73,7 @@ def convert(Dir):
     ex: convert('A1')
     '''
     # filepath to decrypted pdfs folder and text directory
-    pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
+    pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/"
     txtDir = "/Users/matthewwong/dsi-capstone/Text/"
     # changes pdfDir and txtDir to reflect which folder you want to convert
     pdfDir = pdfDir + Dir
@@ -91,17 +92,78 @@ def convert_pdfDir():
     directory into the text directory.
     ex: convert_pdfDir()
     '''
-    pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
+    pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/"
     for client in os.listdir(pdfDir):
         if not client.startswith('.'):
             print 'Converting: {}'.format(client)
             convert(client)
 
 
+def strip_blank(txtDir):
+    '''
+    Deletes any blank text documents created when pdfminer could not pull the text.
+    ex: list_to_OCR = strip_blank('/Users/matthewwong/dsi-capstone/Text/')
+    Returns a list of the blank documents that were deleted and need be pulled with
+    OCR.
+    '''
+    blank_docs = []
+    list_to_OCR = []
+    # gets clients
+    for client in os.listdir(txtDir):
+        if not client.startswith('.'):
+            # gets folders
+            for folder in os.listdir(txtDir + client):
+                if not folder.startswith('.'):
+                    # gets textfiles
+                    docs_list = []
+                    for textfile in os.listdir(txtDir + client + '/' + folder):
+                        textfilepath = txtDir + client + '/' + folder + '/' + textfile
+                        # refers to any document smaller than size 25 as blank
+                        if os.stat(textfilepath).st_size < 25:
+                            blank_docs.append(textfilepath)
+                            os.remove(textfilepath)
+    for filename in blank_docs:
+        # [5:] refers to the index starting with the client folder (ex: A1)
+        list_to_OCR.append('/'.join(filename.split('/')[5:]))
+    return list_to_OCR
+
+
+def fill_one(filename):
+    '''
+    Use to replace a text document that pdfminer could not pull the text from.
+    ex: fill_one('V1/Insurance/Villarin - Insurance - Current HO6 - Allstate - \
+        EXP 2018-04-17 - 562.00.pdf')
+    '''
+    pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/'
+    txtDir = '/Users/matthewwong/dsi-capstone/Test/'
+    final_text = get_text(pdfDir + filename)
+    text_file = open(txtDir + filename, 'w')
+    for page in final_text:
+        text_file.write(page.encode('ascii','ignore'))
+    text_file.close()
+
+
+def fill_blanks(list_to_OCR):
+    '''
+    Use to replace text documents that pdfminer could not pull any text from.
+    ex: fill_blanks(list_to_OCR)
+    '''
+    pdfDir = '/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/'
+    txtDir = '/Users/matthewwong/dsi-capstone/Test/'
+    for filename in list_to_OCR:
+        print 'Converting file: {}'.format(filename)
+        new_filename = string.replace(filename, '.txt', '.pdf')
+        final_text = get_text(pdfDir + new_filename)
+        text_file = open(txtDir + filename, 'w')
+        for page in final_text:
+            text_file.write(page.encode('ascii','ignore'))
+        text_file.close()
+
+
 def OCR_convert(pdfDir, txtDir):
     '''
     Uses OCR to convert all PDF documents from one directory into another.
-    ex: OCR_convert('/Users/matthewwong/dsi-capstone/PDFs/decrypted_subset/', \
+    ex: OCR_convert('/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/', \
                     '/Users/matthewwong/dsi-capstone/OCR_text_subset/')
     '''
     for client in os.listdir(pdfDir)[1:]:

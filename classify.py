@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 
-def classify_knn_cos(test_docs, tfidfed, training_labels, n=3):
+def classify_knn_cos(test_docs, tfidfed, training_labels, n=5):
     '''
     Classifies new documents by finding their cosine similarity to each document
     in the training data.  Then returns a prediction based on majority of the
@@ -134,17 +134,17 @@ def classify_nb(test_docs, tfidfed, training_labels):
     return nb_predictions
 
 
-def nb_accuracy(nb_predictions, labels, display=False):
+def nb_accuracy(nb_predictions, test_labels, display=False):
     '''
     Calculates the accuracy of the Naive Bayes model.
     ex: nb_accuracy(nb_predictions, test_labels)
     '''
     accuracy = []
     nb_predictions = nb_predictions.tolist()
-    for i in xrange(len(labels)):
-        accuracy.append(nb_predictions[i] == labels[i])
+    for i in xrange(len(test_labels)):
+        accuracy.append(nb_predictions[i] == test_labels[i])
         if display == True:
-            print (nb_predictions[i], labels[i])
+            print (nb_predictions[i], test_labels[i])
     result = sum(accuracy) / len(accuracy)
     print '-------------------------'
     print 'Total Accuracy: {}'.format(sum(accuracy) / len(accuracy))
@@ -172,10 +172,13 @@ if __name__ == '__main__':
     #
     dictionary = get_dict('/Users/matthewwong/dsi-capstone/Text/')
     docs, labels = seperate(dictionary)
-    training_docs, test_docs, training_labels, test_labels = train_test_split(\
+    training_docs, test_docs2, training_labels, test_labels2 = train_test_split(\
        docs, labels, stratify=labels, test_size=0.25)
     categories = categories(dictionary)
     tfidfed = tfidf.fit_transform(training_docs)
+
+    dictionary2 = get_dict('/Users/matthewwong/dsi-capstone/Test/')
+    test_docs, test_labels = seperate(dictionary2)
     #
     # nb_predictions = classify_nb(test_docs, tfidfed, training_labels)
     # cos_predictions = classify_avg_cos(categories, test_docs, tfidfed, training_labels)

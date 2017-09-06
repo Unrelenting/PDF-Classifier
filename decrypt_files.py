@@ -34,7 +34,7 @@ def decrypt_pdf(filename):
     Subprocess example:
     subprocess.call(["qpdf", "--password=''", "--decrypt", "input_file", "output_file"])
     '''
-    decrypted_file = "/Users/matthewwong/dsi-capstone/PDFs/decrypted/"
+    decrypted_file = "/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/"
     client_folder = filename.split('/')[-3]
     folder = filename.split('/')[-2]
     pdf = filename.split('/')[-1]
