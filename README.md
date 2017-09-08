@@ -17,8 +17,11 @@ their classification based on various models.
 3. PyOCR
 
 Tips to installing PDFminer:
+
 https://media.readthedocs.org/pdf/pdfminer-docs/latest/pdfminer-docs.pdf
+
 Tips to installing PyOCR:
+
 https://pythontips.com/2016/02/25/ocr-on-pdf-files-using-python/
 
 
