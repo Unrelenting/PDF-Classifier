@@ -4,10 +4,10 @@ Often mortgage companies get hundreds of PDFs a day and many hours are spent by
 employees to classify and file these PDFs.  This essentially costs businesses a
 lot of money because employees need to spend time sorting and filing these PDFs
 instead of completing other tasks essential to the business, so my goal was to
-create a classifier that could address this issue and ultimately save both employees
-time and the business money.  This pipeline contains scripts to decrypt these PDFs
+create a classifier that could address this issue and ultimately save employees
+time and businesses money.  This pipeline contains scripts to decrypt these PDFs
 to allow for text extraction, extract and analyze the text, and then predict
-their classification based on various models.
+their classification based on various NLP models.
 
 
 # Prerequisites
