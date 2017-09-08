@@ -21,7 +21,7 @@ https://github.com/euske/pdfminer/commit/6b6fc264ffd58cd1c305e8c23990b85e846964e
 
 def convert_one(filename, pages=None):
     '''
-    Converts a PDF and returns its contents as a string
+    Converts a PDF and returns its contents as a string using PDFminer.
     ex: text = convert_one('/Users/matthewwong/dsi-capstone/PDFs/decrypted/A1/Appraisal/Certificate.pdf')
     '''
     if not pages:
@@ -46,7 +46,7 @@ def convert_one(filename, pages=None):
 
 def convert_multiple(pdfDir, txtDir):
     '''
-    Converts all PDFs in a specific folder to the Text directory.
+    Converts all PDFs in a specific folder to the Text directory using PDFminer.
     ex: convert_multiple(pdfDir, txtDir + pdfDir.split('/')[-1])
     '''
     text_file = "/Users/matthewwong/dsi-capstone/Text/"
@@ -70,6 +70,7 @@ def convert_multiple(pdfDir, txtDir):
 def convert(Dir):
     '''
     Converts one client's folder with PDFs into text documents in the Text directory
+    using PDFminer.
     ex: convert('A1')
     '''
     # filepath to decrypted pdfs folder and text directory
@@ -89,7 +90,7 @@ def convert(Dir):
 def convert_pdfDir():
     '''
     Simple command line function that will convert every client in the decrypted
-    directory into the text directory.
+    directory into the text directory using PDFminer.
     ex: convert_pdfDir()
     '''
     pdfDir = "/Users/matthewwong/dsi-capstone/PDFs/decrypted_test/"
