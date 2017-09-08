@@ -47,14 +47,3 @@ tfidfed = tfidf.fit_transform(training_docs)
 nb_predictions = classify_nb(test_docs, tfidfed, training_labels)
 cos_predictions = classify_avg_cos(categories, test_docs, tfidfed, training_labels)
 knn_predictions = classify_knn_cos(test_docs, tfidfed, training_labels)
-
-
-
-# Notes on accuracy:
-
-Just looking at kNN(5 or 7) model with PDFminer and PyOCR:
-
-Almost always predicts Conditions and Property labels wrong.
-Of PDFs labelled as Certification, Closing_Docs predicts around ~50-80% accuracy.
-Of PDFs labelled as Disclosures and Lock_Desk predicts around ~80-85% accuracy.
-Usually predicts other documents with ~90+ accuracy.
